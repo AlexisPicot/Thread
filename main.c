@@ -6,31 +6,41 @@
 #include <stdlib.h>
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_t *threads;
-int compteur = 0;
+
+pthread_t th1;
+pthread_t th2;
 
 
-void * threadEnAttente(void * arg){
+
+void * T1(void * arg){
     pthread_mutex_lock(&mutex);
-    printf("Je suis déverouillé ! Je suis le thread N°%d\n",(int)arg);
+    puts("Je suis T1, je fais mon traitement");
+    sleep(3);
+    puts("Je suis T1, j'ai fini");
     pthread_mutex_unlock(&mutex);
+    pthread_exit(3);
+
+}
+void * T2(void * arg){
+    puts("Je suis T2, j'attends que T1 ait fini");
+    pthread_mutex_lock(&mutex);
+    puts("Je suis T2, je suis déverouillé ! Je fais mon traitement");
+    sleep(3);
+    puts("Je suis T2, j'ai fini");
     pthread_exit(3);
 
 }
 
 
 int main(int argc, char** argv) {
-    int n = atoi(argv[1]);
-    pthread_mutex_lock(&mutex);
-    threads = malloc(sizeof(pthread_t)*n);
-    for (int i = 0; i < n; ++i) {
-        pthread_create(&threads[i], NULL, threadEnAttente, i);
-    }
-    pthread_mutex_unlock(&mutex);
-    for (int i = 0; i < n; ++i) {
-        pthread_join(threads[i],NULL);
-    }
 
+    pthread_create(&th1, NULL, T1, 0);
+    pthread_create(&th2, NULL, T2, 0);
+    pthread_mutex_unlock(&mutex);
+
+
+    pthread_join(th1,NULL);
+    pthread_join(th2,NULL);
 
 
 }
