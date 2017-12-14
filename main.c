@@ -4,7 +4,7 @@
 #include <zconf.h>
 #include <stdbool.h>
 
-pthread_mutex_t mutex
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_t ThreadA;
 pthread_t ThreadB;
 int compteur = 0;
