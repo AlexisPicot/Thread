@@ -3,6 +3,6 @@ project(Thread C)
 
 
 set(CMAKE_C_STANDARD 99)
-add_executable(Main  main.c)
+add_executable(Main djikstra.h main.c)
 
 TARGET_LINK_LIBRARIES(Main pthread )
