@@ -10,7 +10,6 @@ pthread_mutex_t mutexRDVb = PTHREAD_MUTEX_INITIALIZER;
 
 pthread_t th1;
 pthread_t th2;
-pthread_t th3;
 
 
 
