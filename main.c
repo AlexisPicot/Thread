@@ -27,9 +27,7 @@ void * produire(void *arg){
     }
 }
 
-int main(int argc, char** argv) {
-
-    printf("%s",argv[1]);
+int main() {
     pthread_create(&ThreadB,NULL,consommer,NULL);
     pthread_create(&ThreadA, NULL, produire, NULL);
     pthread_join(ThreadA,NULL);
