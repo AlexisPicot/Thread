@@ -20,7 +20,7 @@ void * threadEnAttente(void * arg){
 
 
 int main(int argc, char** argv) {
-    int n = 50;
+    int n = atoi(argv[1]);
     pthread_mutex_lock(&mutex);
     threads = malloc(sizeof(pthread_t)*n);
     for (int i = 0; i < n; ++i) {
