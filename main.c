@@ -19,6 +19,7 @@ typedef struct{
 
 
 void * Prod(void * arg){
+    int i;
     while (true) {
         //Je prend un jeton, cela permet d'éviter en gros que
         // l'écrivain ait plus de SIZE_BUFFER coup d'avance
@@ -27,7 +28,9 @@ void * Prod(void * arg){
         //On recupère la varibale passéee en paramètre du thread
         BUFFER * buff = ((BUFFER *) arg);
         //Je déréference (accède à la valeur) et lui donne une valeur entre 0 et 10
-        *buff->ptEcriture=rand()%10;
+        i = rand()%10;
+        *buff->ptEcriture=i;
+        printf("J'ai écris %-3d\n",*buff->ptLecture);
         //((buff->ptEcriture+1)-&buff->mem[0]) -> permet de savoir de combien de case on a avancé par rapport a buff[0]
         //Ensuite on fait un modulo pour eviter les déplacement de tableau et donc pour boucler l'ecriture
         //On obtient un nombre entre 0 et BUFFER_SIZE, c'est en fait l'indice du buffer à acceder pour la prochaine fois
@@ -44,7 +47,8 @@ void * Conso(void * arg){
         V(sem_create(SEM_BUFFER, NULL));
         BUFFER * buff = ((BUFFER *) arg);
         //%-3d permet de dire qu'on écrit sur 3 caractère et si le chiffre est trop court on laisse du blanc, juste pour faire beau
-        printf("%-3d",*buff->ptLecture);
+        printf("\t\t\tJ'ai lu %-3d\n",*buff->ptLecture);
+
         //Il faut flush sinon rien ne s'affiche a la console avant la fin de l'exec
         fflush(stdout);
         buff->ptLecture = &buff->mem[0]+(((buff->ptLecture+1)-&buff->mem[0])%SIZE_BUFFER);
