@@ -22,7 +22,7 @@ typedef struct{
 } Thread;
 
 void * Prod(void * arg){
-    puts("Je suis un producteur");
+    int i;
     while (true) {
         pthread_mutex_lock(&mutexBufferEcriture);
         //Je prend un jeton, cela permet d'éviter en gros que
@@ -33,7 +33,7 @@ void * Prod(void * arg){
         Thread * th = ((Thread *) arg);
         BUFFER * buff = th->buff;
         //Je déréference (accède à la valeur) et lui donne une valeur entre 0 et 10
-        int i = rand()%10;
+        i = rand()%10;
         printf("Je suis l'écrivain %d et j'ai écris %-3d\n",th->numero,*buff->ptLecture);
         *buff->ptEcriture=i;
         //((buff->ptEcriture+1)-&buff->mem[0]) -> permet de savoir de combien de case on a avancé par rapport a buff[0]
@@ -49,7 +49,6 @@ void * Prod(void * arg){
 
 }
 void * Conso(void * arg){
-    puts("Je suis un consommateur");
     while (true) {
         pthread_mutex_lock(&mutexBufferLecture);
         //A l'inverse de Prod, je pose un jeton pour indiquer l'avancement
