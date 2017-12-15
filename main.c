@@ -16,7 +16,10 @@ typedef struct{
     int *ptLecture;
     int *ptEcriture;
 } BUFFER;
-
+typedef struct{
+    BUFFER * buff;
+    int numero;
+} Thread;
 
 void * Prod(void * arg){
     puts("Je suis un producteur");
@@ -27,9 +30,12 @@ void * Prod(void * arg){
         // sur le lecteur et donc que des données soient perdues
         P(sem_create(SEM_BUFFER, NULL));
         //On recupère la varibale passéee en paramètre du thread
-        BUFFER * buff = ((BUFFER *) arg);
+        Thread * th = ((Thread *) arg);
+        BUFFER * buff = th->buff;
         //Je déréference (accède à la valeur) et lui donne une valeur entre 0 et 10
-        *buff->ptEcriture=rand()%10;
+        int i = rand()%10;
+        printf("Je suis l'écrivain %d et j'ai écris %-3d\n",th->numero,*buff->ptLecture);
+        *buff->ptEcriture=i;
         //((buff->ptEcriture+1)-&buff->mem[0]) -> permet de savoir de combien de case on a avancé par rapport a buff[0]
         //Ensuite on fait un modulo pour eviter les déplacement de tableau et donc pour boucler l'ecriture
         //On obtient un nombre entre 0 et BUFFER_SIZE, c'est en fait l'indice du buffer à acceder pour la prochaine fois
@@ -48,9 +54,10 @@ void * Conso(void * arg){
         pthread_mutex_lock(&mutexBufferLecture);
         //A l'inverse de Prod, je pose un jeton pour indiquer l'avancement
         V(sem_create(SEM_BUFFER, NULL));
-        BUFFER * buff = ((BUFFER *) arg);
+        Thread * th = ((Thread *) arg);
+        BUFFER * buff = th->buff;
         //%-3d permet de dire qu'on écrit sur 3 caractère et si le chiffre est trop court on laisse du blanc, juste pour faire beau
-        printf("%-3d",*buff->ptLecture);
+        printf("\t\t\t\t\t\t\tJe suis le lecteur %d et j'ai lu %-3d\n",th->numero,*buff->ptLecture);
         //Il faut flush sinon rien ne s'affiche a la console avant la fin de l'exec
         fflush(stdout);
         buff->ptLecture = &buff->mem[0]+(((buff->ptLecture+1)-&buff->mem[0])%SIZE_BUFFER);
@@ -79,13 +86,23 @@ int main(int argc, char** argv) {
     };
 
     for (int i = 0; i < atoi(argv[2]); ++i) {
+        Thread thread = {
+                .buff = &buff,
+                .numero = i
+        };
+
         pthread_t pthread;
-        pthread_create(&pthread, NULL, Prod, (void *)&buff);
+        pthread_create(&pthread, NULL, Prod, (void *)&thread);
         usleep(500000);
     }
     for (int i = 0; i < atoi(argv[1]); ++i) {
+        Thread thread = {
+                .buff = &buff,
+                .numero = i
+        };
+
         pthread_t pthread;
-        pthread_create(&pthread, NULL, Conso, (void *)&buff);
+        pthread_create(&pthread, NULL, Conso, (void *)&thread);
         usleep(500000);
     }
 
