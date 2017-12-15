@@ -60,14 +60,12 @@ int main(int argc, char** argv) {
     sem_create(SEM_BUFFER, SIZE_BUFFER);
 
 
-
+//Initialisation du Buffer pour que les pointeurs soient sur la première case
     BUFFER  buff = {
             .ptEcriture=&buff.mem[0],
             .ptLecture=&buff.mem[0]
 
     };
-
-
 
     pthread_create(&th1, NULL, Prod, (void *)&buff);
     pthread_create(&th2, NULL, Conso, (void *)&buff);
