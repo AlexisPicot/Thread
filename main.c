@@ -6,7 +6,8 @@
 #include <stdlib.h>
 #include "djikstra.h"
 #define SIZE_BUFFER 3
-#define SEM_BUFFER 2
+#define SEM_BUFFER_ECRIVAIN 2
+#define SEM_BUFFER_LECTEUR 3
 pthread_t th1;
 pthread_t th2;
 
@@ -24,7 +25,8 @@ void * Prod(void * arg){
         //Je prend un jeton, cela permet d'éviter en gros que
         // l'écrivain ait plus de SIZE_BUFFER coup d'avance
         // sur le lecteur et donc que des données soient perdues
-        P(sem_create(SEM_BUFFER, NULL));
+        P(sem_create(SEM_BUFFER_ECRIVAIN, NULL));
+        V(sem_create(SEM_BUFFER_LECTEUR, NULL));
         //On recupère la varibale passéee en paramètre du thread
         BUFFER * buff = ((BUFFER *) arg);
         //Je déréference (accède à la valeur) et lui donne une valeur entre 0 et 10
@@ -44,7 +46,8 @@ void * Prod(void * arg){
 void * Conso(void * arg){
     while (true) {
         //A l'inverse de Prod, je pose un jeton pour indiquer l'avancement
-        V(sem_create(SEM_BUFFER, NULL));
+        P(sem_create(SEM_BUFFER_LECTEUR, NULL));
+        V(sem_create(SEM_BUFFER_ECRIVAIN, NULL));
         BUFFER * buff = ((BUFFER *) arg);
         //%-3d permet de dire qu'on écrit sur 3 caractère et si le chiffre est trop court on laisse du blanc, juste pour faire beau
         printf("\t\t\tJ'ai lu %-3d\n",*buff->ptLecture);
@@ -60,8 +63,12 @@ void * Conso(void * arg){
 int main(int argc, char** argv) {
 
     srand(time(NULL));
-    sem_delete(sem_create(SEM_BUFFER, NULL));
-    sem_create(SEM_BUFFER, SIZE_BUFFER);
+    sem_delete(sem_create(SEM_BUFFER_LECTEUR, NULL));
+    sem_create(SEM_BUFFER_LECTEUR, SIZE_BUFFER);
+    sem_delete(sem_create(SEM_BUFFER_ECRIVAIN, NULL));
+    sem_create(SEM_BUFFER_ECRIVAIN, SIZE_BUFFER);
+
+
 
 
 //Initialisation du Buffer pour que les pointeurs soient sur la première case
