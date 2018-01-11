@@ -6,6 +6,27 @@
 #include <math.h>
 #include <pthread.h>
 
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/shm.h>
+#include <sys/sem.h>
+#include <stdbool.h>
+
+#define SEM_Y_FINISH        6
+
+
+typedef struct {
+    int y;
+    pthread_mutex_t mutex;
+} indice_y;
+
+indice_y  indice = {
+        .y = 0,
+        .mutex=PTHREAD_MUTEX_INITIALIZER
+};
+
+
+
 const int size = 1000;
 pthread_t *threads;
 unsigned char *image;
@@ -60,28 +81,37 @@ static void calcul(int x, int y, unsigned char *pixel)
         pixel[0]=pixel[1]=pixel[2]=0;
 }
 void * thread(void * arg){
-    int x;
-    int y = (int)arg;
-    for (x = 0; x < size; x++) {
-        calcul(x,y,image+3*(y * size + x));
-    }
+    int x,y;
+    do {
+        pthread_mutex_lock(&indice.mutex);
+        y = indice.y++;
+        pthread_mutex_unlock(&indice.mutex);
+
+        if(y>=size) break;
+        for (x = 0; x < size; x++) {
+            calcul(x, y, image + 3 * (y * size + x));
+        }
+
+    }while (1);
+        V(sem_create(SEM_Y_FINISH, NULL));
 }
 int main(int argc, char const *argv[])
 {
 
-
     FILE *file;
     image = malloc(3*size*size);
     int nbThread = atoi(argv[1]);
+    pthread_mutex_unlock(&indice.mutex);
+    sem_delete(sem_create(SEM_Y_FINISH,NULL));
+    sem_create(SEM_Y_FINISH,0);
+
     threads = malloc(sizeof(pthread_t)*nbThread);
 
-    int lignesParThread = size/nbThread;
-
     for (int y = 0; y < nbThread; ++y) {
-       pthread_create(&threads[y], NULL, thread,y);
+       pthread_create(&threads[y], NULL, thread,0);
     }
 
-
+    P(sem_create(SEM_Y_FINISH,NULL));
 
     // �criture fichier
     file = fopen("image.ppm", "w");
