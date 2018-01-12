@@ -1,22 +1,16 @@
 #include <stdio.h>
-#include <unistd.h>
 #include "Djikstra.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
 #include <pthread.h>
 
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <stdbool.h>
 #include <ctype.h>
 
 #define SEM_FINISH        6
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
-
+/**
+ * On crée une structure pour contenir notre mutex, argv et
+ * notre variable à protéger pour plus de clareté
+ */
 typedef struct {
     int indice;
     pthread_mutex_t mutex;
@@ -24,15 +18,16 @@ typedef struct {
 } mutex;
 
 mutex  indice=  {
+        //On commence au troisième argument du tableau argv
+        // car premier est le chemin du fichier binaire et le
+        // deuxième est le nombre de thread
     .indice = 2,
     .mutex=PTHREAD_MUTEX_INITIALIZER
 };
 
 
 int argc;
-char const ***argv;
 pthread_t *threads;
-unsigned char *image;
 
 
 void * thread(void * arg){
@@ -41,7 +36,7 @@ void * thread(void * arg){
         pthread_mutex_lock(&indice.mutex);
         x = indice.indice++;
         pthread_mutex_unlock(&indice.mutex);
-        if(x>=argc-1) break;
+        if(x>=arg-1) break;
 
         FILE* fp1, *fp2;
         int c;
@@ -60,6 +55,13 @@ void * thread(void * arg){
     }while (1);
         V(sem_create(SEM_FINISH, NULL));
 }
+/**
+ *
+ * @param _argc
+ * @param _argv Premier argument : nombre de threads à créer
+ *              Arguments suivants : chemins des fichiers à transformer
+ * @return
+ */
 int main(int _argc, char const *_argv[])
 {
     argc=_argc;
@@ -73,7 +75,7 @@ int main(int _argc, char const *_argv[])
 
 
     for (int y = 0; y < nbThread; ++y) {
-       pthread_create(&threads[y], NULL, thread,0);
+       pthread_create(&threads[y], NULL, thread,argc);
     }
 
     P(sem_create(SEM_FINISH,NULL));
