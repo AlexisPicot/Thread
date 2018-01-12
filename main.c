@@ -71,6 +71,8 @@ static void calcul(int x, int y, unsigned char *pixel)
     else
         pixel[0]=pixel[1]=pixel[2]=0;
 }
+
+
 void * thread(void * arg){
     int x,y;
     do {
@@ -82,9 +84,9 @@ void * thread(void * arg){
         for (x = 0; x < size; x++) {
             calcul(x, y, image + 3 * (y * size + x));
         }
+        V(sem_create(SEM_Y_FINISH, NULL));
 
     }while (1);
-        V(sem_create(SEM_Y_FINISH, NULL));
 }
 int main(int argc, char const *argv[])
 {
@@ -104,7 +106,10 @@ int main(int argc, char const *argv[])
     }
 
     //On attend que les lignes de l'image soient calculées
-    P(sem_create(SEM_Y_FINISH,NULL));
+    for (int y = 2; y < size-1; ++y) {
+        P(sem_create(SEM_Y_FINISH,NULL));
+    }
+
 
     // �criture fichier
     file = fopen("image.ppm", "w");
