@@ -1,16 +1,7 @@
 #include <stdio.h>
-#include <unistd.h>
 #include "Djikstra.h"
-#include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
 #include <pthread.h>
-
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/shm.h>
-#include <sys/sem.h>
-#include <stdbool.h>
 
 #define SEM_Y_FINISH        6
 
@@ -108,9 +99,11 @@ int main(int argc, char const *argv[])
     threads = malloc(sizeof(pthread_t)*nbThread);
 
     for (int y = 0; y < nbThread; ++y) {
+        //On crée autant de threads que nécessaire
        pthread_create(&threads[y], NULL, thread,0);
     }
 
+    //On attend que les lignes de l'image soient calculées
     P(sem_create(SEM_Y_FINISH,NULL));
 
     // �criture fichier
