@@ -57,8 +57,7 @@ void * thread(void * arg){
 
 
     }while (1);
-    //Une fois toutes les lignes calculées on arrive ici
-    // et on débloque le thread principal pour qu'il termine le programme
+    //Une fois tous les fichiers traités on débloque le thread principal pour qu'il termine le programme
         V(sem_create(SEM_FINISH, NULL));
 }
 /**
