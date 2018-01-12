@@ -33,9 +33,13 @@ pthread_t *threads;
 void * thread(void * arg){
     int x;
     do {
-        pthread_mutex_lock(&indice.mutex);
-        x = indice.indice++;
-        pthread_mutex_unlock(&indice.mutex);
+        {
+            //On s'apprête à modifier une variable protegée
+            pthread_mutex_lock(&indice.mutex);
+            x = indice.indice++;
+            pthread_mutex_unlock(&indice.mutex);
+        }
+        //Si on a calculé toutes les lignes on sort de la boucle infinie
         if(x>=arg-1) break;
 
         FILE* fp1, *fp2;
@@ -53,6 +57,8 @@ void * thread(void * arg){
 
 
     }while (1);
+    //Une fois toutes les lignes calculées on arrive ici
+    // et on débloque le thread principal pour qu'il termine le programme
         V(sem_create(SEM_FINISH, NULL));
 }
 /**
